@@ -2,6 +2,7 @@ import scala.io.Source
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import Types.Subscription
+import Types.Post
 
 object Formatters {
 
@@ -18,5 +19,32 @@ object Formatters {
 
     subredditNames zip subredditUrls
   }
+ 
+ //Given a List of Subscription, it returns a Post type
+ def getPosts(subs: List[Subscription]): List[Post] = {
+    implicit val formats: Formats = DefaultFormats
 
+    // List of posts for every sub
+    subs.flatMap { sub =>
+      val (name, url) = sub
+
+      val source = scala.io.Source.fromURL(url)
+      val content = source.mkString
+      source.close()
+
+      val json = parse(content)
+      val children = (json \ "data" \ "children").children
+
+      children.map { c =>
+        val data = c \ "data"
+        val title = (data \ "title").extract[String]
+        val selftext = ( data \ "selftext").extract[String]
+
+        val createdUTC = ( data \ "created_utc").extract[Double].toLong
+        val date = TextProcessing.formatDateFromUTC(createdUTC)
+
+        (name, title, selftext, date)
+      }
+    }
+  }
 }
