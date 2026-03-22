@@ -14,10 +14,14 @@ object Formatters {
     source.close()
 
     val json = parse(content)
-    val subredditNames = (json \ "name").extract[List[String]]
-    val subredditUrls = (json \ "url").extract[List[String]]
+    json.children.map{elem => 
+      val name = (elem \ "name").extract[String]
+      val url = (elem \ "url").extract[String]
+      (name,url)}
+    // val subredditNames = (json \ "name").extract[List[String]]
+    // val subredditUrls = (json \ "url").extract[List[String]]
 
-    subredditNames zip subredditUrls
+    // subredditNames zip subredditUrls
   }
  
  //Given a List of Subscription, it returns a Post type
