@@ -7,49 +7,67 @@ import Types.Post
 object Formatters {
 
 //Given a relative path, it returns a Subscripton type
- def getSubscriptions(path: String): List[Subscription] = {
+ def getSubscriptions(path: String): Option[List[Subscription]] = {
     implicit val formats: Formats = DefaultFormats
-    val source = Source.fromFile(path)
-    val content = source.mkString
-    source.close()
+    try{
+      val source = Source.fromFile(path)
 
-    val json = parse(content)
-    json.children.map{elem => 
-      val name = (elem \ "name").extract[String]
-      val url = (elem \ "url").extract[String]
-      (name,url)}
-    // val subredditNames = (json \ "name").extract[List[String]]
-    // val subredditUrls = (json \ "url").extract[List[String]]
+      try{
+        val content = source.mkString
+        val json = parse(content)
+        Some(json.children.map{elem => 
+          val name = (elem \ "name").extract[String]
+          val url = (elem \ "url").extract[String]
+          (name,url)})
 
-    // subredditNames zip subredditUrls
+      }
+      catch{
+        case _: Exception => None
+      }
+      finally{
+        source.close()
+      }
+    }
+    catch{
+      case _: Exception => None
+    }
   }
  
  //Given a List of Subscription, it returns a Post type
- def getPosts(subs: List[Subscription]): List[Post] = {
+ def getPosts(subs: List[Subscription]): Option[List[Post]] = {
     implicit val formats: Formats = DefaultFormats
 
     // List of posts for every sub
-    subs.flatMap { sub =>
+    Some(subs.flatMap { sub =>
       val (name, url) = sub
+      try{
+        val source = scala.io.Source.fromURL(url)
 
-      val source = scala.io.Source.fromURL(url)
-      val content = source.mkString
-      source.close()
+        try{
+          val content = source.mkString
+          val json = parse(content)
+          val children = (json \ "data" \ "children").children
 
-      val json = parse(content)
-      val children = (json \ "data" \ "children").children
-
-      children.map { c =>
-        val data = c \ "data"
-        val title = (data \ "title").extract[String]
-        val selftext = ( data \ "selftext").extract[String]
-
-        val createdUTC = ( data \ "created_utc").extract[Double].toLong
-        val date = TextProcessing.formatDateFromUTC(createdUTC)
-
-        (name, title, selftext, date)
+          children.map { c =>
+            val data = c \ "data"
+            val title = (data \ "title").extract[String]
+            val selftext = ( data \ "selftext").extract[String]
+            val createdUTC = ( data \ "created_utc").extract[Double].toLong
+            val date = TextProcessing.formatDateFromUTC(createdUTC)
+            (name, title, selftext, date)
+          }
+        }
+        catch{
+          case _: Exception => Nil
+        }
+        finally{
+          source.close()
+        }
       }
-    }
+      catch{
+        case _: Exception => Nil
+      }
+    })
   }
 
   def filterPosts (posts: List[Post]): List[Post] = {
