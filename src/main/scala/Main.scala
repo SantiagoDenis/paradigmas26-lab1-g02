@@ -4,12 +4,26 @@ object Main {
 
   def main(args: Array[String]): Unit = {
 
-    val subsList: List[Subscription] = Formatters.getSubscriptions("subscriptions.json")
-    val allPosts = Formatters.getPosts(subsList)
-    val filterPosts = Formatters.filterPosts(allPosts)
-    println(subsList.mkString("\n"))
-    println(allPosts.mkString("\n"))
-    println(filterPosts.mkString("\n"))
-  }
+    val subsList: Option[List[Subscription]] = Formatters.getSubscriptions("subscriptions.json")
+    
+    subsList match{
 
+      case Some(value) =>
+        val allPosts = Formatters.getPosts(value)
+
+        allPosts match {
+
+          case Some(list) => 
+            val filterPosts = Formatters.filterPosts(list)
+            println(subsList.mkString("\n"))
+            println(allPosts.mkString("\n"))
+            println(filterPosts.mkString("\n"))
+            
+          case None => 
+            print("Error")
+        }
+      case None => 
+        print("Error")
+    }
+  }
 }
