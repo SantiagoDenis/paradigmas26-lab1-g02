@@ -3,6 +3,7 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import Types.Subscription
 import Types.Post
+import StopWords.words
 
 object Formatters {
 
@@ -74,5 +75,19 @@ object Formatters {
     posts.filter { post => val (subrredit, title, text, date) = post
                   title.trim.nonEmpty && text.trim.nonEmpty 
     }
+  }
+
+  def countFrecuency (posts: List[Post]): List[(String, Int)] = {
+    implicit val formats: Formats = DefaultFormats
+
+    val listofStrings = posts.flatMap{post => 
+      val subrredit = post._1
+      val title = post._2
+      val text = post._3
+      (" " + subrredit + " " + title + " " + text + " ").split(' ')
+      }.filter(word => word.exists(_.isUpper) || (!words.contains(word) &&
+    !words.contains(word.toLowerCase) && word != "")).groupBy(word=>word).mapValues(_.size)  
+    
+    listofStrings.toList.sortBy(-_._2)
   }
 }
