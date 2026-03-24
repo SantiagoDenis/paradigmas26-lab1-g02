@@ -15,9 +15,11 @@ object Main {
 
           case Some(list) => 
             val filterPosts = Formatters.filterPosts(list)
+            val relevantWords = Formatters.countFrecuency(filterPosts)
             println(subsList.mkString("\n"))
             println(allPosts.mkString("\n"))
             println(filterPosts.mkString("\n"))
+            println(relevantWords.take(25).mkString)
             
           case None => 
             print("Error")
