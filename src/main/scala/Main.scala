@@ -19,7 +19,7 @@ object Main {
             println(subsList.mkString("\n"))
             println(allPosts.mkString("\n"))
             println(filterPosts.mkString("\n"))
-            println(relevantWords.take(25).mkString)
+            println(relevantWords.mkString)
             
           case None => 
             print("Error")
