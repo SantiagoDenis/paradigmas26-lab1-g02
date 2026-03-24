@@ -85,12 +85,17 @@ object Formatters {
       val title = post._2
       val text = post._3
       (" " + subrredit + " " + title + " " + text + " ").split("\\s+")
-      }.filter(word => word.forall{letter => val ascii_code = letter.toInt 
+      }.filter{word => val lowercase = word.toLowerCase 
+      word.forall{letter => val ascii_code = letter.toInt 
       (64<ascii_code && ascii_code<91) || (96<ascii_code && ascii_code<123)} && 
-      ((word.exists(_.isUpper) && !words.contains(word.toLowerCase)) || 
-      (!words.contains(word) && !words.contains(word.toLowerCase) && 
-      word != ""))).groupBy(word=>word).mapValues(_.size)  
-    
+      ((word.exists(_.isUpper) && !words.contains(lowercase)) || 
+      (!words.contains(word) && !words.contains(lowercase) && 
+      word != ""))}.groupBy(word=>word).mapValues(_.size)  
+    // basicamente agarro las secciones subrredit, title y text, concateno como un unico
+    // string, luego separo cada entrada en una lista donde cada entrada es una palabra y
+    // por ultimo el flatmap lo colapsa a unica lista de palabras. Luego a esa lista de strings
+    // le hago el procesamiento para que queden unicamente las entradas deseadas (que solo contengan
+    // letras, no sean stopwords, tengan mayusculas y demas combinaciones).
     listofStrings.toList.sortBy(-_._2)
   }
 }
