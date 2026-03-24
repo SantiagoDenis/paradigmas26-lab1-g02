@@ -84,9 +84,12 @@ object Formatters {
       val subrredit = post._1
       val title = post._2
       val text = post._3
-      (" " + subrredit + " " + title + " " + text + " ").split(' ')
-      }.filter(word => word.exists(_.isUpper) || (!words.contains(word) &&
-    !words.contains(word.toLowerCase) && word != "")).groupBy(word=>word).mapValues(_.size)  
+      (" " + subrredit + " " + title + " " + text + " ").split("\\s+")
+      }.filter(word => word.forall{letter => val ascii_code = letter.toInt 
+      (64<ascii_code && ascii_code<91) || (96<ascii_code && ascii_code<123)} && 
+      ((word.exists(_.isUpper) && !words.contains(word.toLowerCase)) || 
+      (!words.contains(word) && !words.contains(word.toLowerCase) && 
+      word != ""))).groupBy(word=>word).mapValues(_.size)  
     
     listofStrings.toList.sortBy(-_._2)
   }
