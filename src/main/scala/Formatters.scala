@@ -3,6 +3,7 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import Types.Subscription
 import Types.Post
+import StopWords.words
 
 object Formatters {
 
@@ -74,5 +75,36 @@ object Formatters {
     posts.filter { post => val (subrredit, title, text, date) = post
                   title.trim.nonEmpty && text.trim.nonEmpty 
     }
+  }
+
+  def countFrecuency (posts: List[Post]): List[(String,List[(String, Int)])] = {
+    implicit val formats: Formats = DefaultFormats
+
+    val listofStrings = posts.map{post => 
+      val subrredit = post._1
+      val title = post._2
+      val text = post._3
+      val publication = (" " + title + " " + text + " ").split("\\s+")
+      (subrredit, publication)
+      }.groupBy(_._1).map{case (subName, totalPostsInSub) => 
+      val concat_intern_lists = totalPostsInSub.flatMap(_._2)
+      val filter_words = concat_intern_lists.filter{word => 
+      val lowercase = word.toLowerCase 
+      word.forall{letter => 
+        val ascii_code = letter.toInt 
+      (64<ascii_code && ascii_code<91) || (96<ascii_code && ascii_code<123)} && 
+      ((word.exists(_.isUpper) && !words.contains(lowercase)) || 
+      (!words.contains(word) && !words.contains(lowercase) && 
+      word != ""))}.groupBy(word=>word).mapValues(_.size)
+      (subName, filter_words)}  
+    // basicamente agarro las secciones title y text de cada post, las concateno como un unico
+    // string, lo hago una lista de palabras y a esta lista la asocio al subrredit al que pertenecian el
+    // title/text. Luego quedan tuplas (subrredit, lista de palabras), colapso las tuplas para que haya una 
+    // unica tupla por cada subrredit que tenga todas las palabras del mismo. Por ultimo en cada subrredit 
+    // se descartan aquellas palabras que no cumplen las condiciones adecuadas y se cuenta
+    // la frecuencia de aquellas que quedaron. A la salida va a quedar una tupla por cada subrredit
+    // con una lista que cuenta la frecuencia de las palabras en cada uno.
+    listofStrings.toList.map{case(subName, countFrec) => 
+      (subName, countFrec.toList.sortBy(-_._2) )}
   }
 }
