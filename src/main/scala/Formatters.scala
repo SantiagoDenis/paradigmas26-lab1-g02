@@ -47,4 +47,10 @@ object Formatters {
       }
     }
   }
+
+  def filterPosts (posts: List[Post]): List[Post] = {
+    posts.filter { post => val (subrredit, title, text, date) = post
+                  title.trim.nonEmpty && text.trim.nonEmpty 
+    }
+  }
 }
