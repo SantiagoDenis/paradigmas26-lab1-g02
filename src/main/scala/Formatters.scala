@@ -113,9 +113,25 @@ object Formatters {
     val grouped = posts.groupBy(post => post._1)
     grouped.map{
       case (subreddit, listOfPosts) => 
-        val totalScore = listOfPosts.foldLeft(0)(acc, post) => acc + post._5 //aca con post ._5 estoy sumando el score que es el 5to lugar
+        val totalScore = listOfPosts.foldLeft(0){(acc, post) => 
+          acc + post._5
+        } //aca con post ._5 estoy sumando el score que es el 5to lugar
       (subreddit, totalScore)
     }
   }
 
+  def getStats(posts: List[Post]): String = {
+    val scores = getScores(posts)
+    val frecMap = countFrecuency(posts).toMap //lo paso a un Map porque me sirve el mismo tipo que tiene scores
+    scores.map{
+      case(subreddit, totalScore) => 
+        val frecuencias = frecMap.getOrElse(subreddit, List())
+        s"""
+          | Suberddit: $subreddit
+          | Score total: $totalScore
+          | Palabras:
+          |${frecuencias.map{case (palabra, frec) => s" >> Palabra:$palabra, Frecuencia: $frec"}.mkString("\n")}
+          """.stripMargin
+    }.mkString("\n")
+  }
 }

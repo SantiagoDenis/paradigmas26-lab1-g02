@@ -20,6 +20,8 @@ object Main {
             println(allPosts.mkString("\n"))
             println(filterPosts.mkString("\n"))
             println(relevantWords.mkString)
+            println(" \n ================================================================= \n")
+            println(Formatters.getStats(list))
             
           case None => 
             print("Error")
