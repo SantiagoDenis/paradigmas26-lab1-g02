@@ -55,7 +55,8 @@ object Formatters {
             val selftext = ( data \ "selftext").extract[String]
             val createdUTC = ( data \ "created_utc").extract[Double].toLong
             val date = TextProcessing.formatDateFromUTC(createdUTC)
-            (name, title, selftext, date)
+            val score = (data \ "score").extract[Int]
+            (name, title, selftext, date, score)
           }
         }
         catch{
@@ -72,7 +73,7 @@ object Formatters {
   }
 
   def filterPosts (posts: List[Post]): List[Post] = {
-    posts.filter { post => val (subrredit, title, text, date) = post
+    posts.filter { post => val (subrredit, title, text, date, score) = post
                   title.trim.nonEmpty && text.trim.nonEmpty 
     }
   }
@@ -107,4 +108,14 @@ object Formatters {
     listofStrings.toList.map{case(subName, countFrec) => 
       (subName, countFrec.toList.sortBy(-_._2) )}
   }
+
+  def getScores(posts: List[Post]): Map[String, Int] = {
+    val grouped = posts.groupBy(post => post._1)
+    grouped.map{
+      case (subreddit, listOfPosts) => 
+        val totalScore = listOfPosts.foldLeft(0)(acc, post) => acc + post._5 //aca con post ._5 estoy sumando el score que es el 5to lugar
+      (subreddit, totalScore)
+    }
+  }
+
 }
