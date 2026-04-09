@@ -56,7 +56,9 @@ object Formatters {
         val createdUTC = ( data \ "created_utc").extract[Double].toLong
         val date = TextProcessing.formatDateFromUTC(createdUTC)
         val score = (data \ "score").extract[Int]
-        (name, title, selftext, date, score)
+        val link = (data \ "permalink").extract[String]
+        val url = "https://www.reddit.com" + link
+        (name, title, selftext, date, score, url)
       }
     }.toOption //Some(valor) o None
  }
@@ -78,7 +80,7 @@ object Formatters {
 
 
   def filterPosts (posts: List[Post]): List[Post] = {
-    posts.filter { post => val (subrredit, title, text, date, score) = post
+    posts.filter { post => val (_, title, text, _, _, _) = post
                   title.trim.nonEmpty && text.trim.nonEmpty 
     }
   }
@@ -115,7 +117,7 @@ object Formatters {
       (subName, countFrec.toList.sortBy(-_._2) )}
   }
 
-//Helper para getStats
+//Helper  #1 para getStats, toma los scores totales por cada subreddit, dandome un map con el subreddit y su score asociadio
   def getScores(posts: List[Post]): Map[String, Int] = {
     val grouped = posts.groupBy(post => post._1)
     grouped.map{
@@ -126,18 +128,29 @@ object Formatters {
       (subreddit, totalScore)
     }
   }
+//Helper #2 para getStats, toma los 5 top posts, dandome un map con el subreddit y sus 5 top posts
+  def getTopPosts(posts: List[Post]): Map[String, List[Post]] = {
+    posts
+      .groupBy(_._1) //agrupo por subreddit, me los deja como: subreddit -> lista de posts
+      .map{ case (subreddit, listaDePosts) => (subreddit, listaDePosts.sortBy(post => -post._5).take(5))} //acomodo por score y agarro los primeros 5 (con el menos para ordenar descendente)
+  }
 
   def getStats(posts: List[Post]): String = {
     val scores = getScores(posts)
-    val frecMap = countFrecuency(posts).toMap //lo paso a un Map porque me sirve el mismo tipo que tiene scores
+    val frecMap = countFrecuency(posts).toMap //lo paso a un Map porque me sirve el mismo tipo que tiene scores y posts, es mas facil mostrarlo asi
+    val topPostsMap = getTopPosts(posts)
+
     scores.map{
       case(subreddit, totalScore) => 
         val frecuencias = frecMap.getOrElse(subreddit, List())
+        val topPosts = topPostsMap.getOrElse(subreddit, List())
         s"""
           | Suberddit: $subreddit
           | Score total: $totalScore
-          | Palabras:
+          | >> Palabras:
           |${frecuencias.map{case (palabra, frec) => s" >> Palabra:$palabra, Frecuencia: $frec"}.mkString("\n")}
+          | << Top Posts:
+          |${topPosts.map { case (_, title, _, date, _, url) => s"<< Titulo: $title, Fecha: $date, URL: $url"  }.mkString("\n")}
           """.stripMargin
     }.mkString("\n")
   }
