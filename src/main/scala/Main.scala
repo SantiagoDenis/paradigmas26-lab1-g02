@@ -8,24 +8,17 @@ object Main {
     
     subsList match{
 
-      case Some(value) =>
-        val allPosts = Formatters.getPosts(value)
-
-        allPosts match {
-
-          case Some(list) => 
-            val filterPosts = Formatters.filterPosts(list)
-            val relevantWords = Formatters.countFrecuency(filterPosts)
-            println(subsList.mkString("\n"))
-            println(allPosts.mkString("\n"))
-            println(filterPosts.mkString("\n"))
-            println(relevantWords.mkString)
-            println(" \n ================================================================= \n")
-            println(Formatters.getStats(list))
-            
-          case None => 
-            print("Error")
+      case Some(value) => {
+          val allPosts = Formatters.getPosts(value)
+          val filterPosts = Formatters.filterPosts(allPosts)
+          val relevantWords = Formatters.countFrecuency(filterPosts)
+          println(allPosts.mkString("\n"))
+          println(filterPosts.mkString("\n"))
+          println(relevantWords.mkString)
+          println(" \n ================================================================= \n")
+          println(Formatters.getStats(allPosts))
         }
+            
       case None => 
         print("Error")
     }
